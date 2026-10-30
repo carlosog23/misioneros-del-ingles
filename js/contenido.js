@@ -67,6 +67,54 @@ export const UNIDADES = [
         ]
       },
       {
+        tipo: 'vocab',
+        titulo: 'Profesiones y oficios en Rosarito',
+        items: [
+          { en: 'waiter / waitress', es: 'mesero / mesera' },
+          { en: 'cook', es: 'cocinero / cocinera' },
+          { en: 'bartender', es: 'cantinero / bartender' },
+          { en: 'receptionist', es: 'recepcionista' },
+          { en: 'housekeeper', es: 'camarista (en hotel)' },
+          { en: 'tour guide', es: 'guía de turistas' },
+          { en: 'salesperson', es: 'vendedor / vendedora' },
+          { en: 'fisherman', es: 'pescador' },
+          { en: 'taxi driver', es: 'taxista' },
+          { en: 'security guard', es: 'guardia de seguridad' }
+        ]
+      },
+      {
+        tipo: 'vocab',
+        titulo: 'Oficios de las Misiones Culturales',
+        items: [
+          { en: 'carpenter', es: 'carpintero / carpintera' },
+          { en: 'welder', es: 'herrero / soldador' },
+          { en: 'electrician', es: 'electricista' },
+          { en: 'plumber', es: 'plomero / plomera' },
+          { en: 'seamstress / tailor', es: 'costurera / sastre (corte y confección)' },
+          { en: 'hairdresser', es: 'estilista (cultora de belleza)' },
+          { en: 'baker', es: 'panadero / repostero' },
+          { en: 'mechanic', es: 'mecánico / mecánica' },
+          { en: 'nurse', es: 'enfermero / enfermera' },
+          { en: 'musician', es: 'músico / música' }
+        ]
+      },
+      {
+        tipo: 'vocab',
+        titulo: 'Para hablar de tu trabajo',
+        items: [
+          { en: 'What do you do?', es: '¿A qué te dedicas?' },
+          { en: "I'm a waitress.", es: 'Soy mesera.' },
+          { en: "I'm an electrician.", es: 'Soy electricista.' },
+          { en: 'I work at a hotel.', es: 'Trabajo en un hotel.' },
+          { en: "I'm a student at the Misión Cultural.", es: 'Soy estudiante en la Misión Cultural.' }
+        ]
+      },
+      {
+        tipo: 'tip',
+        titulo: '¿A o An?',
+        texto: 'En inglés, antes de una profesión siempre va "a" o "an" (en español no lo usamos: "soy mesera"). Usa "an" cuando la palabra empieza con sonido de vocal: an electrician. Usa "a" en los demás casos: a cook, a nurse, a mechanic.'
+      },
+      {
         tipo: 'dialogo',
         titulo: 'Diálogo: en un restaurante de Rosarito',
         contexto: 'Ana trabaja en un restaurante frente al mar. Llega un turista llamado John.',
@@ -78,7 +126,9 @@ export const UNIDADES = [
           { quien: 'Ana', en: 'Nice to meet you, too. Where are you from?', es: 'Igualmente. ¿De dónde eres?' },
           { quien: 'John', en: "I'm from California. How are you today?", es: 'Soy de California. ¿Cómo estás hoy?' },
           { quien: 'Ana', en: "I'm fine, thank you. And you?", es: 'Estoy bien, gracias. ¿Y tú?' },
-          { quien: 'John', en: "I'm great, thanks!", es: '¡Muy bien, gracias!' }
+          { quien: 'John', en: "I'm great, thanks! What do you do?", es: '¡Muy bien, gracias! ¿A qué te dedicas?' },
+          { quien: 'Ana', en: "I'm a waitress. And you?", es: 'Soy mesera. ¿Y tú?' },
+          { quien: 'John', en: "I'm a teacher.", es: 'Soy maestro.' }
         ]
       },
       {
@@ -144,11 +194,30 @@ export const UNIDADES = [
         ]
       },
       {
+        id: 'a6',
+        tipo: 'opcion',
+        titulo: '¿A qué se dedica?',
+        instrucciones: 'Lee la descripción y elige la profesión u oficio correcto. En las últimas preguntas elige entre "a" y "an".',
+        preguntas: [
+          { p: 'Trabaja en un restaurante y lleva la comida a las mesas.', opciones: ['plumber', 'waiter', 'nurse'], correcta: 1 },
+          { p: 'Arregla la instalación eléctrica de las casas.', opciones: ['electrician', 'baker', 'tour guide'], correcta: 0 },
+          { p: 'Corta y peina el cabello.', opciones: ['carpenter', 'fisherman', 'hairdresser'], correcta: 2 },
+          { p: 'Hace muebles de madera.', opciones: ['carpenter', 'receptionist', 'mechanic'], correcta: 0 },
+          { p: 'Recibe a los huéspedes en el hotel.', opciones: ['welder', 'receptionist', 'cook'], correcta: 1 },
+          { p: 'Repara coches.', opciones: ['seamstress', 'bartender', 'mechanic'], correcta: 2 },
+          { p: 'Hace pan y pasteles.', opciones: ['baker', 'taxi driver', 'security guard'], correcta: 0 },
+          { p: 'Lleva a los turistas a conocer la ciudad.', opciones: ['nurse', 'tour guide', 'plumber'], correcta: 1 },
+          { p: "I'm ___ electrician.", opciones: ['a', 'an'], correcta: 1 },
+          { p: 'She is ___ nurse.', opciones: ['a', 'an'], correcta: 0 },
+          { p: 'Te preguntan: "What do you do?"', opciones: ["I'm fine, thank you.", "I'm from Rosarito.", "I'm a cook."], correcta: 2 }
+        ]
+      },
+      {
         id: 'a5',
         tipo: 'escritura',
         titulo: 'Preséntate en inglés',
-        instrucciones: 'Escribe de 4 a 6 oraciones: saluda, di tu nombre, de dónde eres, dónde vives, cómo estás y despídete. Tu maestro la revisará y te dejará observaciones.',
-        ejemplo: "Hello! My name is Laura. I'm from Sinaloa. I live in Rosarito. I'm fine, thank you. See you later!"
+        instrucciones: 'Escribe de 4 a 6 oraciones: saluda, di tu nombre, de dónde eres, dónde vives, a qué te dedicas y despídete. Tu maestro la revisará y te dejará observaciones.',
+        ejemplo: "Hello! My name is Laura. I'm from Sinaloa. I live in Rosarito. I'm a cook. I work at a restaurant. See you later!"
       }
     ]
   },
