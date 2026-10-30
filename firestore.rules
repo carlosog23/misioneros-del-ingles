@@ -1,0 +1,51 @@
+rules_version = '2';
+// Reglas de seguridad de Misioneros del Inglés.
+// - Cada alumno solo puede ver y enviar SUS respuestas.
+// - Un alumno no puede ponerse calificación ni observaciones.
+// - Solo las cuentas con rol "maestro" ven todo, revisan y dan de alta.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function sesion() { return request.auth != null; }
+    function esMaestro() {
+      return sesion() && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == 'maestro';
+    }
+
+    match /usuarios/{uid} {
+      allow read: if sesion() && (request.auth.uid == uid || esMaestro());
+      allow create, update, delete: if esMaestro();
+    }
+
+    match /respuestas/{id} {
+      function nueva() { return request.resource.data; }
+      function actual() { return resource.data; }
+      function revisionIntacta() {
+        return nueva().get('observacion', '') == actual().get('observacion', '')
+          && nueva().get('calificacionMaestro', null) == actual().get('calificacionMaestro', null)
+          && nueva().get('revisado', false) == actual().get('revisado', false);
+      }
+
+      allow read: if sesion() && (esMaestro() || resource == null || actual().uid == request.auth.uid);
+
+      allow create: if sesion()
+        && nueva().uid == request.auth.uid
+        && id.matches(request.auth.uid + '_.*')
+        && nueva().get('observacion', '') == ''
+        && nueva().get('calificacionMaestro', null) == null
+        && nueva().get('revisado', false) == false;
+
+      allow update: if esMaestro() || (sesion()
+        && actual().uid == request.auth.uid
+        && nueva().uid == request.auth.uid
+        && revisionIntacta()
+        && (actual().tipo == 'auto' || actual().get('revisado', false) == false));
+
+      allow delete: if esMaestro();
+    }
+
+    match /config/{doc} {
+      allow read: if sesion();
+      allow write: if esMaestro();
+    }
+  }
+}
