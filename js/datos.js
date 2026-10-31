@@ -7,7 +7,9 @@
 
 import { FIREBASE_CONFIG, DOMINIO_USUARIOS } from './firebase-config.js';
 
-const configurado = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('PEGA') && FIREBASE_CONFIG.projectId);
+// Recorrido de prueba (demo.html): siempre en modo demostración, sin tocar los datos reales
+export const VISITA = typeof window !== 'undefined' && window.MISIONEROS_VISITA === true;
+const configurado = !VISITA && !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('PEGA') && FIREBASE_CONFIG.projectId);
 export const MODO = configurado ? 'firebase' : 'demo';
 
 export function normalizarUsuario(u) {
@@ -112,7 +114,7 @@ async function crearFirebase() {
 //  MODO DEMOSTRACIÓN (solo en este navegador)
 // ---------------------------------------------------------------------
 function crearDemo() {
-  const CLAVE = 'misioneros-demo-v1';
+  const CLAVE = VISITA ? 'misioneros-visita-v1' : 'misioneros-demo-v1';
   let memoria = null;
   const leer = () => {
     try { const t = localStorage.getItem(CLAVE); if (t) return JSON.parse(t); } catch (e) { /* sin almacenamiento */ }
@@ -132,7 +134,8 @@ function crearDemo() {
         m1: { nombre: 'Teacher Carlos', usuario: 'teacher', password: 'demo123', rol: 'maestro', grupo: '', activo: true },
         a1: { nombre: 'María López', usuario: 'maria', password: 'demo123', rol: 'alumno', grupo: 'Básico A', activo: true },
         a2: { nombre: 'José Ramírez', usuario: 'jose', password: 'demo123', rol: 'alumno', grupo: 'Básico A', activo: true },
-        a3: { nombre: 'Guadalupe Torres', usuario: 'lupita', password: 'demo123', rol: 'alumno', grupo: 'Básico B', activo: true }
+        a3: { nombre: 'Guadalupe Torres', usuario: 'lupita', password: 'demo123', rol: 'alumno', grupo: 'Básico B', activo: true },
+        ...(VISITA ? { v1: { nombre: 'Visitante', usuario: 'visitante', password: 'visita164', rol: 'alumno', grupo: 'Recorrido de prueba', activo: true } } : {})
       },
       respuestas: {
         a2_u1_a1: { uid: 'a2', nombre: 'José Ramírez', unidad: 'u1', actividad: 'a1', tipo: 'auto', respuestas: ['1', '2', '0', '1', '0', '0'], detalle: [true, true, true, true, false, true], puntaje: 8.3, total: 6, intentos: 1, fecha: ahora - 86400000, observacion: '', calificacionMaestro: null, revisado: false },

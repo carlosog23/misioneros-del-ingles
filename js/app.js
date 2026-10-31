@@ -3,7 +3,7 @@
 //  Misión Cultural No. 164 · Playas de Rosarito, B.C.
 // =====================================================================
 
-import { iniciar, MODO, normalizarUsuario } from './datos.js';
+import { iniciar, MODO, VISITA, normalizarUsuario } from './datos.js';
 import { UNIDADES, buscarUnidad, itemsDe, CUADERNILLO, TRIMESTRES, ILUSTRACIONES } from './contenido.js';
 
 const $app = document.getElementById('app');
@@ -53,7 +53,9 @@ const respuestaOrdenar = q => q.piezas ? q.piezas.join(SEP_PIEZAS) : q.r;
 const ICONO_PLAY = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
 const botonAudio = (texto, etiqueta) => `<button type="button" class="btn-audio" data-accion="hablar" data-texto="${esc(texto)}" aria-label="Escuchar: ${esc(etiqueta || texto)}">${ICONO_PLAY}</button>`;
 
-const bannerDemo = () => MODO === 'demo'
+const bannerDemo = () => VISITA
+  ? `<div class="banner-demo banner-visita"><b>Recorrido de prueba:</b> explora y contesta todo lo que quieras. Tus respuestas solo se guardan en este teléfono. <button type="button" class="enlace" data-accion="reiniciar-demo">Empezar de nuevo</button></div>`
+  : MODO === 'demo'
   ? `<div class="banner-demo">Modo demostración: los datos se guardan solo en este navegador. <button type="button" class="enlace" data-accion="reiniciar-demo">Reiniciar datos</button></div>`
   : '';
 
@@ -171,10 +173,29 @@ async function vistaInicio() {
       <div class="rejilla-unidades">${us.map(tarjetaDe).join('')}</div></section>`;
   }).join('');
   pintar(`
-    <section class="saludo"><h1>Hello, ${esc(primerNombre(yo.nombre))}!</h1><p>¿Listo para practicar? Elige una unidad para empezar.</p></section>
+    ${VISITA ? bienvenidaVisita() : `<section class="saludo"><h1>Hello, ${esc(primerNombre(yo.nombre))}!</h1><p>¿Listo para practicar? Elige una unidad para empezar.</p></section>`}
     ${conObs ? `<a class="aviso-obs" href="#/avance">Tu maestro te dejó ${conObs} ${conObs === 1 ? 'observación' : 'observaciones'}. Toca aquí para verlas →</a>` : ''}
     <a class="tarjeta-cuadernillo" href="${CUADERNILLO}" target="_blank" rel="noopener">${ICONO_LIBRO}<span><strong>Mi cuadernillo de trabajo</strong><small>Todo el curso en PDF para imprimir o estudiar sin conexión. Cada actividad de la plataforma te dice en qué página está.</small></span></a>
     ${tarjetas}`, 'inicio');
+}
+
+function bienvenidaVisita() {
+  const puntos = [
+    ['12 unidades en todo el ciclo escolar', 'De «Hello!» a hablar de tus planes: saludar, números, familia, rutina, restaurante, la ciudad, el trabajo, las compras y más.'],
+    ['Escucha cada palabra', 'Toca ▶ y oye la pronunciación del vocabulario, los diálogos y las lecturas.'],
+    ['Situaciones reales de Rosarito', 'El restaurante, el hotel, la tienda y el turista que pide indicaciones.'],
+    ['Calificación al instante', 'La mayoría de los ejercicios se califican solos y te dicen la respuesta correcta.'],
+    ['Tu maestro te acompaña', 'En el curso real, tu maestro revisa tus textos y te deja observaciones.'],
+    ['También en papel', 'Si prefieres no usar el celular, todo viene en el cuadernillo de trabajo para imprimir.']
+  ];
+  return `<section class="bienvenida">
+    <img src="img/emblema-192.png" alt="" width="64" height="64">
+    <h1>Welcome! Bienvenido al recorrido</h1>
+    <p>Así es el curso de inglés básico de la <b>Misión Cultural No. 164</b> de Playas de Rosarito, para jóvenes de 15 años en adelante y adultos que empiezan desde cero. Entra a cualquier unidad, escucha, contesta y mira cómo aprendes.</p>
+    <ul class="beneficios">${puntos.map(([t, d]) => `<li><strong>${t}</strong><span>${d}</span></li>`).join('')}</ul>
+    <div class="acciones-bienvenida"><a class="btn" href="#/unidad/u1">Empezar con la Unidad 1 →</a></div>
+    <p class="invitacion">¿Te gustó? Pregunta por el curso de inglés en la Misión Cultural No. 164 de Playas de Rosarito o escríbenos en <a href="https://www.facebook.com/mision164" target="_blank" rel="noopener">Facebook</a>.</p>
+  </section>`;
 }
 
 // ---------------------------------------------------------------------
@@ -359,7 +380,7 @@ async function enviarActividad(form) {
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
   try {
     await D.guardarRespuesta({ uid: yo.uid, nombre: yo.nombre, unidad: u.id, actividad: a.id, ...registro });
-    aviso(a.tipo === 'escritura' ? 'Listo. Tu maestro revisará tu texto.' : `Enviado. Tu calificación: ${formatoCal(registro.puntaje)}`);
+    aviso(a.tipo === 'escritura' ? (VISITA ? 'Listo. En el curso real, tu maestro revisaría tu texto y te dejaría observaciones.' : 'Listo. Tu maestro revisará tu texto.') : `Enviado. Tu calificación: ${formatoCal(registro.puntaje)}`);
     await vistaUnidad(u.id, 'ejercicios');
     const el = document.getElementById('act-' + a.id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -566,9 +587,10 @@ document.addEventListener('click', async ev => {
   if (!el) return;
   const acc = el.dataset.accion;
   if (acc === 'hablar') return hablar(el.dataset.texto);
+  if (acc === 'salir' && VISITA) { if (confirm('¿Terminar el recorrido y borrar tus respuestas de prueba?')) D.reiniciar(); return; }
   if (acc === 'salir') { history.replaceState(null, '', location.pathname + location.search); return D.salir(); }
   if (acc === 'recargar') return location.reload();
-  if (acc === 'reiniciar-demo') { if (confirm('¿Borrar los datos de prueba y empezar de nuevo?')) D.reiniciar(); return; }
+  if (acc === 'reiniciar-demo') { if (confirm(VISITA ? '¿Borrar tus respuestas de prueba y empezar de nuevo?' : '¿Borrar los datos de prueba y empezar de nuevo?')) D.reiniciar(); return; }
   if (acc === 'ficha') {
     const caja = el.closest('[data-ordenar]');
     const destino = el.parentElement.classList.contains('banco') ? caja.querySelector('.respuesta-ordenar') : caja.querySelector('.banco');
@@ -644,8 +666,10 @@ async function arrancar() {
   }
   D.onSesion(async (perfil, msg) => {
     yo = perfil;
+    if (!yo && VISITA) { try { await D.entrar('visitante', 'visita164'); } catch (e) { console.error(e); mostrarLogin(msg); } return; }
     if (!yo) { mostrarLogin(msg); return; }
     try { config = await D.config(); } catch (e) { console.error(e); }
+    if (VISITA) config = { ...config, abiertas: UNIDADES.map(u => u.id) };
     const inicio = yo.rol === 'maestro' ? '#/maestro' : '#/inicio';
     if (!location.hash || location.hash === '#/' || location.hash === '#') location.hash = inicio; // dispara hashchange
     else rutear();
