@@ -4,7 +4,7 @@
 // =====================================================================
 
 import { iniciar, MODO, normalizarUsuario } from './datos.js';
-import { UNIDADES, buscarUnidad, itemsDe } from './contenido.js';
+import { UNIDADES, buscarUnidad, itemsDe, CUADERNILLO, TRIMESTRES, ILUSTRACIONES } from './contenido.js';
 
 const $app = document.getElementById('app');
 let D = null;          // capa de datos
@@ -45,6 +45,11 @@ function hablar(texto) {
   } catch (e) { aviso('Este navegador no puede reproducir el audio.', 'error'); }
 }
 
+const ICONO_LIBRO = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 6.5C10.2 5.2 7.7 4.5 5 4.5H3v13.5h2c2.7 0 5.2.7 7 2 1.8-1.3 4.3-2 7-2h2V4.5h-2c-2.7 0-5.2.7-7 2zm0 0V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+const enlacePagina = (p, texto) => p ? `<a class="chip-libro" href="${CUADERNILLO}#page=${p}" target="_blank" rel="noopener">${ICONO_LIBRO}<span>${texto || 'Cuadernillo pág. ' + p}</span></a>` : '';
+const ilustracion = en => { const k = String(en || '').toLowerCase().replace(/[.!]+$/, ''); return ILUSTRACIONES[k] || ''; };
+const SEP_PIEZAS = ' ‖ ';
+const respuestaOrdenar = q => q.piezas ? q.piezas.join(SEP_PIEZAS) : q.r;
 const ICONO_PLAY = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
 const botonAudio = (texto, etiqueta) => `<button type="button" class="btn-audio" data-accion="hablar" data-texto="${esc(texto)}" aria-label="Escuchar: ${esc(etiqueta || texto)}">${ICONO_PLAY}</button>`;
 
@@ -147,7 +152,7 @@ async function vistaInicio() {
   pintar(cargando(), 'inicio');
   const resp = await D.respuestasDe(yo.uid);
   const conObs = resp.filter(r => r.observacion).length;
-  const tarjetas = UNIDADES.map(u => {
+  const tarjetaDe = u => {
     const abierta = !u.proximamente && config.abiertas.includes(u.id);
     if (!abierta) {
       return `<div class="unidad-tarjeta bloqueada"><span class="num">Unidad ${u.numero}</span><h3>${esc(u.titulo)}</h3><p>${esc(u.tituloEs)}</p><span class="etiqueta">Próximamente</span></div>`;
@@ -159,11 +164,17 @@ async function vistaInicio() {
       <span class="num">Unidad ${u.numero}</span><h3>${esc(u.titulo)}</h3><p>${esc(u.tituloEs)}</p>
       <div class="avance" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de la unidad"><span style="width:${pct}%"></span></div>
       <small>${hechas} de ${acts.length} actividades</small></a>`;
+  };
+  const tarjetas = TRIMESTRES.map(t => {
+    const us = UNIDADES.filter(u => (u.trimestre || 1) === t.n);
+    return `<section class="trimestre"><h2 class="trimestre-titulo">${esc(t.nombre)} <small>${esc(t.fechas)}</small></h2>
+      <div class="rejilla-unidades">${us.map(tarjetaDe).join('')}</div></section>`;
   }).join('');
   pintar(`
     <section class="saludo"><h1>Hello, ${esc(primerNombre(yo.nombre))}!</h1><p>¿Listo para practicar? Elige una unidad para empezar.</p></section>
     ${conObs ? `<a class="aviso-obs" href="#/avance">Tu maestro te dejó ${conObs} ${conObs === 1 ? 'observación' : 'observaciones'}. Toca aquí para verlas →</a>` : ''}
-    <div class="rejilla-unidades">${tarjetas}</div>`, 'inicio');
+    <a class="tarjeta-cuadernillo" href="${CUADERNILLO}" target="_blank" rel="noopener">${ICONO_LIBRO}<span><strong>Mi cuadernillo de trabajo</strong><small>Todo el curso en PDF para imprimir o estudiar sin conexión. Cada actividad de la plataforma te dice en qué página está.</small></span></a>
+    ${tarjetas}`, 'inicio');
 }
 
 // ---------------------------------------------------------------------
@@ -181,7 +192,8 @@ async function vistaUnidad(id, sub) {
   const cuerpo = tab === 'material' ? renderMaterial(u) : renderEjercicios(u, resp, esMaestro);
   pintar(`
     <a class="volver" href="${esMaestro ? '#/maestro/unidades' : '#/inicio'}">← Volver</a>
-    <header class="unidad-cab"><span class="num">Unidad ${u.numero}</span><h1>${esc(u.titulo)}</h1><p>${esc(u.tituloEs)}</p></header>
+    <header class="unidad-cab"><span class="num">Unidad ${u.numero}</span><h1>${esc(u.titulo)}</h1><p>${esc(u.tituloEs)}</p>
+      ${u.paginas ? `<p class="cab-libro">${enlacePagina(u.paginas.inicio, `En tu cuadernillo: págs. ${u.paginas.inicio} a ${u.paginas.fin}`)}</p>` : ''}</header>
     ${esMaestro ? '<p class="nota">Vista previa del maestro. Puedes ver todo, pero aquí no se guardan respuestas.</p>' : ''}
     <div class="sub-pestanas" role="tablist">
       <a href="#/unidad/${u.id}" role="tab" aria-selected="${tab === 'material'}" class="${tab === 'material' ? 'activa' : ''}">Material</a>
@@ -192,16 +204,21 @@ async function vistaUnidad(id, sub) {
 
 function renderMaterial(u) {
   const bloques = u.material.map(b => {
+    const pag = b.pagina ? enlacePagina(b.pagina) : '';
     if (b.tipo === 'intro') return `<p class="intro">${esc(b.texto)}</p>`;
-    if (b.tipo === 'tip') return `<aside class="tip"><strong>${esc(b.titulo)}</strong><p>${esc(b.texto)}</p></aside>`;
-    if (b.tipo === 'vocab') return `<section class="tarjeta"><h2>${esc(b.titulo)}</h2><ul class="vocab">${b.items.map(i =>
-      `<li>${botonAudio(i.en)}<span class="en">${esc(i.en)}</span><span class="es">${esc(i.es)}</span></li>`).join('')}</ul></section>`;
-    if (b.tipo === 'gramatica') return `<section class="tarjeta"><h2>${esc(b.titulo)}</h2><p>${esc(b.explicacion)}</p>
+    if (b.tipo === 'metas') return `<section class="metas"><h2>${esc(b.titulo)}</h2><ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`;
+    if (b.tipo === 'tip') return `<aside class="tip"><strong>${esc(b.titulo)}</strong><p>${esc(b.texto)}</p>${pag}</aside>`;
+    if (b.tipo === 'vocab') return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div><ul class="vocab">${b.items.map(i => {
+      const dib = i.img || ilustracion(i.en);
+      const audio = /^[A-Z]$/.test(i.en) ? i.en : i.en.replace(/ \/ /g, ', ');
+      return `<li>${botonAudio(audio, i.en)}${dib ? `<span class="dibujo" aria-hidden="true">${dib}</span>` : ''}<span class="en">${esc(i.en)}</span><span class="es">${esc(i.es)}</span></li>`;
+    }).join('')}</ul></section>`;
+    if (b.tipo === 'gramatica') return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div><p>${esc(b.explicacion)}</p>
       <div class="tabla-caja"><table class="tabla"><thead><tr><th scope="col"></th>${b.encabezados.map(h => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead>
-      <tbody>${b.filas.map(f => `<tr><td>${botonAudio(f[0])}</td><td class="en">${esc(f[0])}</td><td class="en">${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')}</tbody></table></div></section>`;
+      <tbody>${b.filas.map(f => `<tr><td>${botonAudio(String(f[0]).split('  –  ')[0].replace(/→/g, ','))}</td>${f.map((c, k) => `<td class="${k < f.length - 1 ? 'en' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
     if (b.tipo === 'dialogo') {
       const todo = b.lineas.map(l => l.en).join(' ');
-      return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2><button type="button" class="btn-sec btn-chico" data-accion="hablar" data-texto="${esc(todo)}">${ICONO_PLAY} Escuchar todo</button></div>
+      return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}<button type="button" class="btn-sec btn-chico" data-accion="hablar" data-texto="${esc(todo)}">${ICONO_PLAY} Escuchar todo</button></div>
       <p class="contexto">${esc(b.contexto)}</p>
       <div class="dialogo">${b.lineas.map((l, i) => `<div class="linea ${i % 2 ? 'der' : ''}"><span class="quien">${esc(l.quien)}</span><div class="globo">${botonAudio(l.en)}<div><p class="en">${esc(l.en)}</p><p class="es">${esc(l.es)}</p></div></div></div>`).join('')}</div></section>`;
     }
@@ -211,7 +228,10 @@ function renderMaterial(u) {
 }
 
 function renderEjercicios(u, resp, preview) {
-  return (u.actividades || []).map((a, i) => tarjetaActividad(u, a, resp.find(r => r.unidad === u.id && r.actividad === a.id), i, preview)).join('')
+  const acts = u.actividades || [];
+  return acts.map((a, i) => (a.extra && !(acts[i - 1] || {}).extra && i > 0
+      ? '<h2 class="separador-extra">Práctica extra <small>Actividades adicionales que solo están en la plataforma</small></h2>' : '')
+    + tarjetaActividad(u, a, resp.find(r => r.unidad === u.id && r.actividad === a.id), i, preview)).join('')
     + `<div class="centrado"><a class="btn-sec" href="#/unidad/${u.id}">← Repasar el material</a></div>`;
 }
 
@@ -231,6 +251,14 @@ function tarjetaActividad(u, a, r, i, preview) {
   const correccion = (qi, correcta) => detalle && !detalle[qi] ? `<p class="correccion">Respuesta correcta: <b>${esc(correcta)}</b></p>` : '';
   const pre = `${u.id}-${a.id}`;
   let cuerpo = '';
+  let apoyo = '';
+  if (a.lectura) apoyo += `<div class="lectura">${botonAudio(a.lectura, 'el texto')}<p class="en">${esc(a.lectura)}</p></div>`;
+  if (a.mapa) apoyo += `<div class="mapa" role="img" aria-label="Mapa de la calle ${esc(a.mapa.calle)}">
+      <div class="mapa-fila">${a.mapa.filas[0].map(x => `<span class="lugar">${esc(x)}</span>`).join('')}</div>
+      <div class="mapa-calle">${esc(a.mapa.calle)}</div>
+      <div class="mapa-fila">${a.mapa.filas[1].map(x => `<span class="lugar abajo">${esc(x)}</span>`).join('')}</div></div>`;
+  if (a.tabla) apoyo += `<div class="tabla-caja"><table class="tabla tabla-apoyo">${a.tabla.map((f, k) => `<tr>${f.map(c => k === 0 ? `<th scope="col">${esc(c)}</th>` : `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  if (a.banco) apoyo += `<p class="banco-palabras">Palabras: ${a.banco.map(w => `<b>${esc(w)}</b>`).join(' · ')}</p>`;
 
   if (a.tipo === 'opcion') {
     cuerpo = a.preguntas.map((q, qi) => `<fieldset class="pregunta ${marca(qi)}"><legend>${qi + 1}. ${esc(q.p)}</legend>
@@ -244,26 +272,31 @@ function tarjetaActividad(u, a, r, i, preview) {
       ${correccion(qi, p[1])}</div>`).join('');
   } else if (a.tipo === 'completar') {
     cuerpo = a.preguntas.map((q, qi) => {
-      const [antes, despues] = q.p.split('___');
-      return `<div class="pregunta ${marca(qi)}"><label class="completar" for="${pre}-q${qi}"><span>${qi + 1}. ${esc(antes)}</span>
-        <input id="${pre}-q${qi}" name="q${qi}" class="hueco" autocomplete="off" autocapitalize="none" spellcheck="false" value="${prev ? esc(prev[qi]) : ''}" required aria-label="Espacio de la oración ${qi + 1}">
-        <span>${esc(despues)}</span></label>${correccion(qi, q.r[0])}</div>`;
+      const partes = q.p.split('___');
+      const huecos = partes.length - 1;
+      const previas = prev && prev[qi] ? String(prev[qi]).split(' / ') : [];
+      const largos = String(q.r[0]).split(' / ');
+      const ancho = k => Math.min(240, Math.max(90, String(largos[k] || largos[0]).length * 11 + 24));
+      const campos = partes.map((t, k) => `<span>${k === 0 ? `${qi + 1}. ` : ''}${esc(t)}</span>` + (k < huecos
+        ? `<input id="${pre}-q${qi}${huecos > 1 ? '_' + k : ''}" name="q${qi}${huecos > 1 ? '_' + k : ''}" class="hueco" style="width:${ancho(k)}px" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(previas[k] ?? '')}" required aria-label="Espacio ${k + 1} de la oración ${qi + 1}">` : '')).join('');
+      return `<div class="pregunta ${marca(qi)}"><div class="completar">${q.audio ? botonAudio(q.audio, 'el número ' + (qi + 1)) : ''}${campos}</div>${correccion(qi, q.r[0])}</div>`;
     }).join('');
   } else if (a.tipo === 'ordenar') {
     cuerpo = a.preguntas.map((q, qi) => {
-      const palabras = q.r.split(' ');
+      const sep = q.piezas ? SEP_PIEZAS : ' ';
+      const palabras = q.piezas ? q.piezas.slice() : q.r.split(' ');
       let elegidas = [], banco = barajar(palabras, pre + qi);
       if (prev && prev[qi]) {
-        elegidas = String(prev[qi]).split(' ').filter(Boolean);
+        elegidas = String(prev[qi]).split(sep).filter(Boolean);
         banco = banco.slice();
         elegidas.forEach(w => { const k = banco.indexOf(w); if (k >= 0) banco.splice(k, 1); });
       }
-      const chip = w => `<button type="button" class="ficha" data-accion="ficha">${esc(w)}</button>`;
-      return `<div class="pregunta ordenar ${marca(qi)}" data-ordenar><p class="etiqueta-q">${qi + 1}.</p>
+      const chip = w => `<button type="button" class="ficha${q.piezas ? ' ficha-larga' : ''}" data-accion="ficha">${esc(w)}</button>`;
+      return `<div class="pregunta ordenar ${marca(qi)}" data-ordenar data-sep="${esc(sep)}"><p class="etiqueta-q">${qi + 1}.</p>
         <div class="respuesta-ordenar" aria-label="Tu oración">${elegidas.map(chip).join('')}</div>
         <div class="banco" aria-label="Palabras disponibles">${banco.map(chip).join('')}</div>
         <input type="hidden" name="q${qi}" value="${prev ? esc(prev[qi]) : ''}">
-        ${correccion(qi, q.r)}</div>`;
+        ${correccion(qi, q.piezas ? q.piezas.map((p, k) => `${k + 1}) ${p}`).join('  ') : q.r)}</div>`;
     }).join('');
   } else if (a.tipo === 'escritura') {
     const bloqueada = r && r.revisado;
@@ -283,8 +316,9 @@ function tarjetaActividad(u, a, r, i, preview) {
     ? `<div class="observacion"><strong>Observación de tu maestro</strong>${r.calificacionMaestro !== null && r.calificacionMaestro !== undefined ? `<span class="cal">Calificación: ${formatoCal(r.calificacionMaestro)}</span>` : ''}${r.observacion ? `<p>${esc(r.observacion)}</p>` : ''}</div>` : '';
 
   return `<article class="tarjeta actividad" id="act-${a.id}">
-    <header class="act-cab"><div><span class="num">Actividad ${i + 1}</span><h2>${esc(a.titulo)}</h2></div>${preview ? '' : estadoActividad(a, r)}</header>
-    <p class="instrucciones">${esc(a.instrucciones)}</p>
+    <header class="act-cab"><div><span class="num">${a.cuadernillo ? `Actividad ${a.cuadernillo.letra}` : a.extra ? 'Práctica extra · solo en la plataforma' : `Actividad ${i + 1}`}</span><h2>${esc(a.titulo)}</h2>
+      ${a.cuadernillo ? enlacePagina(a.cuadernillo.pagina, `Cuadernillo pág. ${a.cuadernillo.pagina} · actividad ${a.cuadernillo.letra}`) : ''}</div>${preview ? '' : estadoActividad(a, r)}</header>
+    <p class="instrucciones">${esc(a.instrucciones)}</p>${apoyo}
     ${obs}${resultado}
     <form data-form="actividad" data-unidad="${u.id}" data-actividad="${a.id}" class="act-form">${cuerpo}<div class="acciones">${boton}</div></form>
   </article>`;
@@ -294,7 +328,7 @@ function calificarItem(a, it, resp) {
   if (a.tipo === 'opcion') return String(resp) === String(it.correcta);
   if (a.tipo === 'relacionar') return norm(resp) === norm(it[1]);
   if (a.tipo === 'completar') return it.r.some(x => norm(x) === norm(resp));
-  if (a.tipo === 'ordenar') return norm(resp) === norm(it.r);
+  if (a.tipo === 'ordenar') return norm(resp) === norm(respuestaOrdenar(it));
   return false;
 }
 
@@ -310,7 +344,12 @@ async function enviarActividad(form) {
     registro = { tipo: 'manual', respuestas: { texto }, detalle: null, puntaje: null, total: 0 };
   } else {
     const items = itemsDe(a);
-    const respuestas = items.map((_, i) => String(fd.get('q' + i) ?? ''));
+    const respuestas = items.map((it, i) => {
+      const huecos = a.tipo === 'completar' ? it.p.split('___').length - 1 : 1;
+      if (huecos > 1) return Array.from({ length: huecos }, (_, k) => String(fd.get(`q${i}_${k}`) ?? '').trim()).every(Boolean)
+        ? Array.from({ length: huecos }, (_, k) => String(fd.get(`q${i}_${k}`)).trim()).join(' / ') : '';
+      return String(fd.get('q' + i) ?? '');
+    });
     if (respuestas.some(x => !x.trim())) { aviso('Contesta todas las preguntas antes de enviar.', 'error'); return; }
     const detalle = items.map((it, i) => calificarItem(a, it, respuestas[i]));
     const puntaje = Math.round(detalle.filter(Boolean).length / detalle.length * 100) / 10;
@@ -454,13 +493,14 @@ async function vistaDetalleAlumno(uid) {
 function vistaUnidades() {
   const filas = UNIDADES.map(u => {
     const abierta = config.abiertas.includes(u.id);
-    return `<li class="unidad-fila"><div><span class="num">Unidad ${u.numero}</span><strong>${esc(u.titulo)}</strong><small>${esc(u.tituloEs)}</small></div>
+    return `<li class="unidad-fila"><div><span class="num">Unidad ${u.numero} · Trimestre ${u.trimestre || 1}</span><strong>${esc(u.titulo)}</strong><small>${esc(u.tituloEs)}${u.paginas ? ` · Cuadernillo págs. ${u.paginas.inicio}–${u.paginas.fin}` : ''}</small></div>
       <div class="acciones-fila">${u.proximamente ? '<span class="etiqueta">En preparación</span>' : `
         <a class="btn-sec btn-chico" href="#/unidad/${u.id}">Vista previa</a>
         <button type="button" class="${abierta ? 'btn-sec' : 'btn'} btn-chico" data-accion="abrir-unidad" data-id="${u.id}">${abierta ? 'Cerrar' : 'Abrir a alumnos'}</button>`}
         ${abierta && !u.proximamente ? '<span class="estado ok">Abierta</span>' : ''}</div></li>`;
   }).join('');
-  pintar(`<h1>Unidades</h1><p>Abre cada unidad cuando el grupo esté listo. Los alumnos solo ven las unidades abiertas.</p><ul class="tarjeta lista-unidades">${filas}</ul>`, 'unidades');
+  pintar(`<h1>Unidades</h1><p>Abre cada unidad cuando el grupo esté listo. Los alumnos solo ven las unidades abiertas.</p>
+    <p>${enlacePagina(1, 'Abrir el cuadernillo del alumno (PDF)')}</p><ul class="tarjeta lista-unidades">${filas}</ul>`, 'unidades');
 }
 
 // ---------------------------------------------------------------------
@@ -533,7 +573,7 @@ document.addEventListener('click', async ev => {
     const caja = el.closest('[data-ordenar]');
     const destino = el.parentElement.classList.contains('banco') ? caja.querySelector('.respuesta-ordenar') : caja.querySelector('.banco');
     destino.appendChild(el);
-    caja.querySelector('input[type=hidden]').value = [...caja.querySelectorAll('.respuesta-ordenar .ficha')].map(f => f.textContent).join(' ');
+    caja.querySelector('input[type=hidden]').value = [...caja.querySelectorAll('.respuesta-ordenar .ficha')].map(f => f.textContent).join(caja.dataset.sep || ' ');
     caja.classList.remove('bien', 'mal');
     return;
   }

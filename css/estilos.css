@@ -262,3 +262,43 @@ details[open] > summary strong::before { content: "▾ "; }
   .tarjeta { padding: 16px; }
   .linea { max-width: 100%; }
 }
+
+/* ---------------------------------------------------------------------
+   Cuadernillo de trabajo: referencias de página, trimestres e ilustraciones
+   --------------------------------------------------------------------- */
+.chip-libro { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--ambar-fondo); color: var(--naranja-osc); font-size: .88rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.chip-libro:hover { text-decoration: underline; }
+.act-cab .chip-libro { margin-top: 6px; }
+.cab-libro { margin-top: 10px !important; }
+.tip .chip-libro { margin-top: 10px; }
+.tarjeta-cuadernillo { display: flex; gap: 14px; align-items: center; margin: 0 0 22px; padding: 16px 18px; border-radius: var(--radio); background: var(--marino); color: #fff; text-decoration: none; box-shadow: var(--sombra); }
+.tarjeta-cuadernillo svg { width: 34px; height: 34px; flex: none; color: var(--naranja); }
+.tarjeta-cuadernillo strong { display: block; font-size: 1.05rem; }
+.tarjeta-cuadernillo small { display: block; opacity: .85; margin-top: 2px; line-height: 1.35; }
+.trimestre { margin-bottom: 26px; }
+.trimestre-titulo { font-size: 1.1rem; margin: 0 0 12px; color: var(--marino); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.trimestre-titulo small { font-weight: 400; color: var(--texto-2); font-size: .85rem; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .trimestre-titulo { color: var(--cielo); } }
+:root[data-theme="dark"] .trimestre-titulo { color: var(--cielo); }
+.metas { background: var(--superficie); border-radius: var(--radio); padding: 16px 18px; margin: 0 0 18px; border-left: 5px solid var(--marino); box-shadow: var(--sombra); }
+.metas h2 { font-size: 1rem; margin: 0 0 6px; }
+.metas ul { margin: 0; padding-left: 20px; }
+.metas li { margin: 3px 0; }
+.vocab li:has(.dibujo) { grid-template-columns: auto auto 1fr; }
+.vocab .dibujo { grid-row: span 2; font-size: 30px; line-height: 1; width: 38px; text-align: center; }
+.fila-titulo .chip-libro { margin-left: auto; }
+.lectura { display: flex; gap: 10px; align-items: flex-start; background: var(--fondo); border-left: 4px solid var(--mar); border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; }
+.lectura p { margin: 0; line-height: 1.6; }
+.mapa { background: var(--fondo); border-radius: 12px; padding: 12px; margin: 0 0 16px; }
+.mapa-fila { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.lugar { display: grid; place-items: center; min-height: 56px; border: 1.5px solid var(--marino); border-radius: 10px; background: var(--superficie); font-weight: 600; text-align: center; padding: 4px; }
+.lugar.abajo { background: var(--ambar-fondo); }
+.mapa-calle { text-align: center; color: var(--texto-2); font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; padding: 10px 0; border-top: 2px dashed var(--borde); border-bottom: 2px dashed var(--borde); margin: 8px 0; }
+.tabla-apoyo { margin-bottom: 14px; }
+.tabla-apoyo td { text-align: center; }
+.banco-palabras { background: var(--ambar-fondo); border-radius: 10px; padding: 8px 12px; margin: 0 0 14px; }
+.ficha-larga { display: block; width: 100%; text-align: left; margin: 0 0 6px; }
+.separador-extra { margin: 28px 0 12px; font-size: 1.1rem; }
+.separador-extra small { display: block; font-weight: 400; color: var(--texto-2); font-size: .85rem; margin-top: 2px; }
+.completar .btn-audio { margin-right: 4px; }
+.ejemplo p { white-space: pre-line; }
