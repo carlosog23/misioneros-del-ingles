@@ -52,6 +52,9 @@ export const PRON = {
   "mechanic": "mekánik",
   "nurse": "ners",
   "musician": "miusíshan",
+  "teacher": "tícher",
+  "student": "stúdent",
+  "housewife": "jáusuaif",
   "What do you do?": "uát du iu dú?",
   "I'm a waitress.": "áim a uéitres",
   "I'm an electrician.": "áim an ilektríshan",
@@ -438,10 +441,11 @@ export const PRON = {
 };
 
 // Busca la pronunciación de una palabra o frase (sin importar mayúsculas)
-const MIN = Object.fromEntries(Object.entries(PRON).map(([k, v]) => [k.toLowerCase(), v]));
+const norm = t => String(t).toLowerCase().replace(/\s+/g, ' ').trim();
+const MIN = Object.fromEntries(Object.entries(PRON).map(([k, v]) => [norm(k), v]));
 export function pronunciacion(en) {
   if (!en) return '';
-  return PRON[en] || MIN[String(en).toLowerCase()] || '';
+  return PRON[en] || MIN[norm(en)] || '';
 }
 
 // ---- Diálogos: cómo se dice cada frase completa
