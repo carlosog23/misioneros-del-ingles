@@ -5,7 +5,7 @@
 
 import { iniciar, MODO, VISITA, normalizarUsuario } from './datos.js';
 import { UNIDADES, buscarUnidad, itemsDe, CUADERNILLO, TRIMESTRES, ILUSTRACIONES } from './contenido.js';
-import { pronunciacion } from './pronunciacion.js';
+import { pronunciacion, pronunciacionFrase } from './pronunciacion.js';
 
 const $app = document.getElementById('app');
 let D = null;          // capa de datos
@@ -248,7 +248,7 @@ function renderMaterial(u) {
       const todo = b.lineas.map(l => l.en).join(' ');
       return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}<button type="button" class="btn-sec btn-chico" data-accion="hablar" data-texto="${esc(todo)}">${ICONO_PLAY} Escuchar todo</button></div>
       <p class="contexto">${esc(b.contexto)}</p>
-      <div class="dialogo">${b.lineas.map((l, i) => `<div class="linea ${i % 2 ? 'der' : ''}"><span class="quien">${esc(l.quien)}</span><div class="globo">${botonAudio(l.en)}<div><p class="en">${esc(l.en)}</p><p class="es">${esc(l.es)}</p></div></div></div>`).join('')}</div></section>`;
+      <div class="dialogo">${b.lineas.map((l, i) => `<div class="linea ${i % 2 ? 'der' : ''}"><span class="quien">${esc(l.quien)}</span><div class="globo">${botonAudio(l.en)}<div><p class="en">${esc(l.en)}</p>${pronunciacionFrase(l.en) ? `<p class="pr" title="Así se pronuncia">${esc(pronunciacionFrase(l.en))}</p>` : ''}<p class="es">${esc(l.es)}</p></div></div></div>`).join('')}</div></section>`;
     }
     return '';
   }).join('');

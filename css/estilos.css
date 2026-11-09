@@ -324,3 +324,8 @@ details[open] > summary strong::before { content: "▾ "; }
 .ayuda-pr .pr { display: inline-block; margin-right: 4px; padding: 1px 8px; border-radius: 99px; background: #c2570c; color: #fff; font-size: 12px; font-weight: 800; font-style: normal; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .vocab .pr { color: #ffa45c; } :root:not([data-theme="light"]) .ayuda-pr { background: #3a2412; border-color: #6b3f1a; color: #ffe2c6; } }
 :root[data-theme="dark"] .vocab .pr { color: #ffa45c; } :root[data-theme="dark"] .ayuda-pr { background: #3a2412; border-color: #6b3f1a; color: #ffe2c6; }
+
+.globo .pr { margin: 2px 0 4px; font-size: 14.5px; font-weight: 700; font-style: italic; color: #c2570c; line-height: 1.35; }
+.globo .pr::before { content: "🗣 "; font-style: normal; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .globo .pr { color: #ffa45c; } }
+:root[data-theme="dark"] .globo .pr { color: #ffa45c; }
