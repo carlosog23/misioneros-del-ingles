@@ -5,6 +5,7 @@
 
 import { iniciar, MODO, VISITA, normalizarUsuario } from './datos.js';
 import { UNIDADES, buscarUnidad, itemsDe, CUADERNILLO, TRIMESTRES, ILUSTRACIONES } from './contenido.js';
+import { pronunciacion } from './pronunciacion.js';
 
 const $app = document.getElementById('app');
 let D = null;          // capa de datos
@@ -224,16 +225,22 @@ async function vistaUnidad(id, sub) {
 }
 
 function renderMaterial(u) {
+  let avisoPr = false;
   const bloques = u.material.map(b => {
     const pag = b.pagina ? enlacePagina(b.pagina) : '';
     if (b.tipo === 'intro') return `<p class="intro">${esc(b.texto)}</p>`;
     if (b.tipo === 'metas') return `<section class="metas"><h2>${esc(b.titulo)}</h2><ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`;
     if (b.tipo === 'tip') return `<aside class="tip"><strong>${esc(b.titulo)}</strong><p>${esc(b.texto)}</p>${pag}</aside>`;
-    if (b.tipo === 'vocab') return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div><ul class="vocab">${b.items.map(i => {
+    if (b.tipo === 'vocab') {
+      const ayuda = avisoPr ? '' : '<p class="ayuda-pr"><span class="pr">así se dice</span> Debajo de cada palabra en inglés está cómo se pronuncia, escrito como se lee en español. La sílaba con acento es la que suena más fuerte. Escucha el audio ▶ y repite.</p>';
+      avisoPr = true;
+      return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div>${ayuda}<ul class="vocab">${b.items.map(i => {
       const dib = i.img || ilustracion(i.en);
       const audio = /^[A-Z]$/.test(i.en) ? i.en : i.en.replace(/ \/ /g, ', ');
-      return `<li>${botonAudio(audio, i.en)}${dib ? `<span class="dibujo" aria-hidden="true">${dib}</span>` : ''}<span class="en">${esc(i.en)}</span><span class="es">${esc(i.es)}</span></li>`;
+      const pr = pronunciacion(i.en);
+      return `<li class="${pr ? 'con-pr' : ''}">${botonAudio(audio, i.en)}${dib ? `<span class="dibujo" aria-hidden="true">${dib}</span>` : ''}<span class="en">${esc(i.en)}</span>${pr ? `<span class="pr" title="Así se pronuncia">${esc(pr)}</span>` : ''}<span class="es">${esc(i.es)}</span></li>`;
     }).join('')}</ul></section>`;
+    }
     if (b.tipo === 'gramatica') return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div><p>${esc(b.explicacion)}</p>
       <div class="tabla-caja"><table class="tabla"><thead><tr><th scope="col"></th>${b.encabezados.map(h => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead>
       <tbody>${b.filas.map(f => `<tr><td>${botonAudio(String(f[0]).split('  –  ')[0].replace(/→/g, ','))}</td>${f.map((c, k) => `<td class="${k < f.length - 1 ? 'en' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
