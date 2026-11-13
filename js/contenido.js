@@ -94,57 +94,9 @@ const U1 = {
         ]
       },
       {
-        tipo: 'vocab',
-        titulo: 'Profesiones y oficios en Rosarito',
-        items: [
-          { en: 'waiter / waitress', es: 'mesero / mesera' },
-          { en: 'cook', es: 'cocinero / cocinera' },
-          { en: 'bartender', es: 'cantinero / bartender' },
-          { en: 'receptionist', es: 'recepcionista' },
-          { en: 'housekeeper', es: 'camarista (en hotel)' },
-          { en: 'tour guide', es: 'guía de turistas' },
-          { en: 'salesperson', es: 'vendedor / vendedora' },
-          { en: 'fisherman', es: 'pescador' },
-          { en: 'taxi driver', es: 'taxista' },
-          { en: 'security guard', es: 'guardia de seguridad' }
-        ]
-      },
-      {
-        tipo: 'vocab',
-        titulo: 'Oficios de las Misiones Culturales',
-        items: [
-          { en: 'carpenter', es: 'carpintero / carpintera' },
-          { en: 'welder', es: 'herrero / soldador' },
-          { en: 'electrician', es: 'electricista' },
-          { en: 'plumber', es: 'plomero / plomera' },
-          { en: 'seamstress / tailor', es: 'costurera / sastre (corte y confección)' },
-          { en: 'hairdresser', es: 'estilista (cultora de belleza)' },
-          { en: 'baker', es: 'panadero / repostero' },
-          { en: 'mechanic', es: 'mecánico / mecánica' },
-          { en: 'nurse', es: 'enfermero / enfermera' },
-          { en: 'musician', es: 'músico / música' }
-        ]
-      },
-      {
-        tipo: 'vocab',
-        titulo: 'Para hablar de tu trabajo',
-        items: [
-          { en: 'What do you do?', es: '¿A qué te dedicas?' },
-          { en: "I'm a waitress.", es: 'Soy mesera.' },
-          { en: "I'm an electrician.", es: 'Soy electricista.' },
-          { en: 'I work at a hotel.', es: 'Trabajo en un hotel.' },
-          { en: "I'm a student at the Misión Cultural.", es: 'Soy estudiante en la Misión Cultural.' }
-        ]
-      },
-      {
-        tipo: 'tip',
-        titulo: '¿A o An?',
-        texto: 'En inglés, antes de una profesión siempre va "a" o "an" (en español no lo usamos: "soy mesera"). Usa "an" cuando la palabra empieza con sonido de vocal: an electrician. Usa "a" en los demás casos: a cook, a nurse, a mechanic.'
-      },
-      {
         tipo: 'dialogo',
-        titulo: 'Diálogo: en un restaurante de Rosarito',
-        contexto: 'Ana trabaja en un restaurante frente al mar. Llega un turista llamado John.',
+        titulo: 'Diálogo: Ana conoce a John',
+        contexto: 'Ana vive en Rosarito. En el malecón conoce a John, un turista.',
         lineas: [
           { quien: 'Ana', en: 'Good afternoon! Welcome to Rosarito.', es: '¡Buenas tardes! Bienvenido a Rosarito.' },
           { quien: 'John', en: 'Hi! Thank you.', es: '¡Hola! Gracias.' },
@@ -153,9 +105,9 @@ const U1 = {
           { quien: 'Ana', en: 'Nice to meet you, too. Where are you from?', es: 'Igualmente. ¿De dónde eres?' },
           { quien: 'John', en: "I'm from California. How are you today?", es: 'Soy de California. ¿Cómo estás hoy?' },
           { quien: 'Ana', en: "I'm fine, thank you. And you?", es: 'Estoy bien, gracias. ¿Y tú?' },
-          { quien: 'John', en: "I'm great, thanks! What do you do?", es: '¡Muy bien, gracias! ¿A qué te dedicas?' },
-          { quien: 'Ana', en: "I'm a waitress. And you?", es: 'Soy mesera. ¿Y tú?' },
-          { quien: 'John', en: "I'm a teacher.", es: 'Soy maestro.' }
+          { quien: 'John', en: "I'm great, thanks!", es: '¡Muy bien, gracias!' },
+          { quien: 'Ana', en: 'See you later, John!', es: '¡Nos vemos luego, John!' },
+          { quien: 'John', en: 'Goodbye, Ana!', es: '¡Adiós, Ana!' }
         ]
       },
       {
@@ -221,31 +173,102 @@ const U1 = {
         ]
       },
       {
-        id: 'a6',
-        tipo: 'opcion',
-        titulo: '¿A qué se dedica?',
-        instrucciones: 'Lee la descripción y elige la profesión u oficio correcto. En las últimas preguntas elige entre "a" y "an".',
-        preguntas: [
-          { p: 'Trabaja en un restaurante y lleva la comida a las mesas.', opciones: ['plumber', 'waiter', 'nurse'], correcta: 1 },
-          { p: 'Arregla la instalación eléctrica de las casas.', opciones: ['electrician', 'baker', 'tour guide'], correcta: 0 },
-          { p: 'Corta y peina el cabello.', opciones: ['carpenter', 'fisherman', 'hairdresser'], correcta: 2 },
-          { p: 'Hace muebles de madera.', opciones: ['carpenter', 'receptionist', 'mechanic'], correcta: 0 },
-          { p: 'Recibe a los huéspedes en el hotel.', opciones: ['welder', 'receptionist', 'cook'], correcta: 1 },
-          { p: 'Repara coches.', opciones: ['seamstress', 'bartender', 'mechanic'], correcta: 2 },
-          { p: 'Hace pan y pasteles.', opciones: ['baker', 'taxi driver', 'security guard'], correcta: 0 },
-          { p: 'Lleva a los turistas a conocer la ciudad.', opciones: ['nurse', 'tour guide', 'plumber'], correcta: 1 },
-          { p: "I'm ___ electrician.", opciones: ['a', 'an'], correcta: 1 },
-          { p: 'She is ___ nurse.', opciones: ['a', 'an'], correcta: 0 },
-          { p: 'Te preguntan: "What do you do?"', opciones: ["I'm fine, thank you.", "I'm from Rosarito.", "I'm a cook."], correcta: 2 }
-        ]
-      },
-      {
         id: 'a5',
         tipo: 'escritura',
         titulo: 'Preséntate en inglés',
-        instrucciones: 'Escribe de 4 a 6 oraciones: saluda, di tu nombre, de dónde eres, dónde vives, a qué te dedicas y despídete. Tu maestro la revisará y te dejará observaciones.',
-        ejemplo: "Hello! My name is Laura. I'm from Sinaloa. I live in Rosarito. I'm a cook. I work at a restaurant. See you later!"
+        instrucciones: 'Escribe de 4 a 6 oraciones: saluda, di tu nombre, de dónde eres, dónde vives y despídete. Tu maestro la revisará y te dejará observaciones.',
+        ejemplo: "Hello! My name is Laura. I'm from Sinaloa. I live in Rosarito. I'm a student. See you later!"
       }
+    ]
+  };
+
+// --- Contenido que estaba en la Unidad 1 y ahora pertenece a otras unidades ---
+// Profesiones y oficios: Unidad 7 (At Work)
+const OFICIOS_U7 = [
+  {
+    tipo: 'vocab',
+    titulo: 'Profesiones y oficios en Rosarito',
+    items: [
+      { en: 'waiter / waitress', es: 'mesero / mesera' },
+      { en: 'cook', es: 'cocinero / cocinera' },
+      { en: 'bartender', es: 'cantinero / bartender' },
+      { en: 'receptionist', es: 'recepcionista' },
+      { en: 'housekeeper', es: 'camarista (en hotel)' },
+      { en: 'tour guide', es: 'guía de turistas' },
+      { en: 'salesperson', es: 'vendedor / vendedora' },
+      { en: 'fisherman', es: 'pescador' },
+      { en: 'taxi driver', es: 'taxista' },
+      { en: 'security guard', es: 'guardia de seguridad' }
+    ]
+  },
+  {
+    tipo: 'vocab',
+    titulo: 'Oficios de las Misiones Culturales',
+    items: [
+      { en: 'carpenter', es: 'carpintero / carpintera' },
+      { en: 'welder', es: 'herrero / soldador' },
+      { en: 'electrician', es: 'electricista' },
+      { en: 'plumber', es: 'plomero / plomera' },
+      { en: 'seamstress / tailor', es: 'costurera / sastre (corte y confección)' },
+      { en: 'hairdresser', es: 'estilista (cultora de belleza)' },
+      { en: 'baker', es: 'panadero / repostero' },
+      { en: 'mechanic', es: 'mecánico / mecánica' },
+      { en: 'nurse', es: 'enfermero / enfermera' },
+      { en: 'musician', es: 'músico / música' }
+    ]
+  },
+  {
+    tipo: 'vocab',
+    titulo: 'Para hablar de tu trabajo',
+    items: [
+      { en: 'What do you do?', es: '¿A qué te dedicas?' },
+      { en: "I'm a waitress.", es: 'Soy mesera.' },
+      { en: "I'm an electrician.", es: 'Soy electricista.' },
+      { en: 'I work at a hotel.', es: 'Trabajo en un hotel.' },
+      { en: "I'm a student at the Misión Cultural.", es: 'Soy estudiante en la Misión Cultural.' }
+    ]
+  },
+  {
+    tipo: 'tip',
+    titulo: '¿A o An?',
+    texto: 'En inglés, antes de una profesión siempre va "a" o "an" (en español no lo usamos: "soy mesera"). Usa "an" cuando la palabra empieza con sonido de vocal: an electrician. Usa "a" en los demás casos: a cook, a nurse, a mechanic.'
+  }
+];
+const PRACTICA_OFICIOS_U7 = {
+    id: 'a6',
+    tipo: 'opcion',
+    titulo: '¿A qué se dedica?',
+    instrucciones: 'Lee la descripción y elige la profesión u oficio correcto. En las últimas preguntas elige entre "a" y "an".',
+    preguntas: [
+      { p: 'Trabaja en un restaurante y lleva la comida a las mesas.', opciones: ['plumber', 'waiter', 'nurse'], correcta: 1 },
+      { p: 'Arregla la instalación eléctrica de las casas.', opciones: ['electrician', 'baker', 'tour guide'], correcta: 0 },
+      { p: 'Corta y peina el cabello.', opciones: ['carpenter', 'fisherman', 'hairdresser'], correcta: 2 },
+      { p: 'Hace muebles de madera.', opciones: ['carpenter', 'receptionist', 'mechanic'], correcta: 0 },
+      { p: 'Recibe a los huéspedes en el hotel.', opciones: ['welder', 'receptionist', 'cook'], correcta: 1 },
+      { p: 'Repara coches.', opciones: ['seamstress', 'bartender', 'mechanic'], correcta: 2 },
+      { p: 'Hace pan y pasteles.', opciones: ['baker', 'taxi driver', 'security guard'], correcta: 0 },
+      { p: 'Lleva a los turistas a conocer la ciudad.', opciones: ['nurse', 'tour guide', 'plumber'], correcta: 1 },
+      { p: "I'm ___ electrician.", opciones: ['a', 'an'], correcta: 1 },
+      { p: 'She is ___ nurse.', opciones: ['a', 'an'], correcta: 0 },
+      { p: 'Te preguntan: "What do you do?"', opciones: ["I'm fine, thank you.", "I'm from Rosarito.", "I'm a cook."], correcta: 2 }
+    ]
+  };
+// Diálogo del restaurante: Unidad 5 (Food & Restaurants)
+const DIALOGO_RESTAURANTE_U5 = {
+    tipo: 'dialogo',
+    titulo: 'Diálogo: Bienvenida en un restaurante de Rosarito',
+    contexto: 'Ana trabaja en un restaurante frente al mar. Llega un turista llamado John.',
+    lineas: [
+      { quien: 'Ana', en: 'Good afternoon! Welcome to Rosarito.', es: '¡Buenas tardes! Bienvenido a Rosarito.' },
+      { quien: 'John', en: 'Hi! Thank you.', es: '¡Hola! Gracias.' },
+      { quien: 'Ana', en: "My name is Ana. What's your name?", es: 'Me llamo Ana. ¿Cómo te llamas?' },
+      { quien: 'John', en: "I'm John. Nice to meet you, Ana.", es: 'Soy John. Mucho gusto, Ana.' },
+      { quien: 'Ana', en: 'Nice to meet you, too. Where are you from?', es: 'Igualmente. ¿De dónde eres?' },
+      { quien: 'John', en: "I'm from California. How are you today?", es: 'Soy de California. ¿Cómo estás hoy?' },
+      { quien: 'Ana', en: "I'm fine, thank you. And you?", es: 'Estoy bien, gracias. ¿Y tú?' },
+      { quien: 'John', en: "I'm great, thanks! What do you do?", es: '¡Muy bien, gracias! ¿A qué te dedicas?' },
+      { quien: 'Ana', en: "I'm a waitress. And you?", es: 'Soy mesera. ¿Y tú?' },
+      { quien: 'John', en: "I'm a teacher.", es: 'Soy maestro.' }
     ]
   };
 
@@ -274,7 +297,7 @@ const U1_CUADERNILLO = {
       "titulo": "Al terminar esta unidad podrás:",
       "items": [
         "Saludar y despedirme según la hora del día.",
-        "Presentarme: decir mi nombre, de dónde soy, dónde vivo y a qué me dedico.",
+        "Presentarme: decir mi nombre, de dónde soy y dónde vivo.",
         "Usar el verbo to be (ser / estar) con I, you, he, she, we y they."
       ]
     },
@@ -583,7 +606,7 @@ const U1_CUADERNILLO = {
     {
       "tipo": "tip",
       "titulo": "Actividad oral en clase: Habla con tu compañero",
-      "texto": "1) Lean el diálogo de la unidad en voz alta, cada quien con un personaje. 2) Repítanlo cambiando los nombres, el lugar y la profesión por los suyos. 3) Presenta a tu compañero al grupo: «This is Juan. He is from Rosarito. He is a mechanic.»",
+      "texto": "1) Lean el diálogo de la unidad en voz alta, cada quien con un personaje. 2) Repítanlo cambiando los nombres y el lugar por los suyos. 3) Presenta a tu compañero al grupo: «This is Juan. He is from Rosarito.»",
       "pagina": 11
     }
   ],
@@ -6853,6 +6876,15 @@ export const UNIDADES = [
     ]
   }
 ];
+
+// Se colocan en su unidad: los oficios al inicio del vocabulario de la 7 y el diálogo antes del de la 5
+{
+  const u7 = UNIDADES.find(u => u.id === 'u7');
+  u7.material.splice(u7.material.findIndex(b => b.tipo === 'vocab'), 0, ...OFICIOS_U7);
+  u7.actividades.push({ ...PRACTICA_OFICIOS_U7, extra: true });
+  const u5 = UNIDADES.find(u => u.id === 'u5');
+  u5.material.splice(u5.material.findIndex(b => b.tipo === 'dialogo'), 0, DIALOGO_RESTAURANTE_U5);
+}
 
 export function buscarUnidad(id) {
   return UNIDADES.find(u => u.id === id);
