@@ -238,7 +238,7 @@ function renderMaterial(u) {
       avisoPr = true;
       return `<section class="tarjeta"><div class="fila-titulo"><h2>${esc(b.titulo)}</h2>${pag}</div>${ayuda}<ul class="vocab">${b.items.map(i => {
       const dib = i.img || ilustracion(i.en);
-      const audio = /^[A-Z]$/.test(i.en) ? i.en : i.en.replace(/ \/ /g, ', ');
+      const audio = /^[A-Z]$/.test(i.en) ? i.en : (i.en.includes('=') ? i.en.split('=').pop().trim() : i.en.replace(/ \/ /g, ', '));
       const pr = pronunciacion(i.en);
       return `<li class="${pr ? 'con-pr' : ''}">${botonAudio(audio, i.en)}${dib ? `<span class="dibujo" aria-hidden="true">${dib}</span>` : ''}<span class="en">${esc(i.en)}</span>${pr ? `<span class="pr" title="Así se pronuncia">${esc(pr)}</span>` : ''}<span class="es">${esc(i.es)}</span></li>`;
     }).join('')}</ul></section>`;
