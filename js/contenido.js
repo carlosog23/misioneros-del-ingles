@@ -2135,7 +2135,7 @@ export const UNIDADES = [
           "letra": "F"
         },
         "tipo": "escritura",
-        "instrucciones": "Dibuja o pega una foto de tu familia en el recuadro. Después escribe 5 o 6 oraciones sobre ella.",
+        "instrucciones": "Presenta a tu familia por escrito en 5 o 6 oraciones: cómo se llaman, qué edad tienen, a qué se dedican y cómo son. Si quieres, en el cuadernillo puedes pegar una foto en el recuadro.",
         "ejemplo": "This is my family. My mother's name is ______. She is ______. I have ______."
       }
     ]
@@ -5680,8 +5680,8 @@ export const UNIDADES = [
       },
       {
         "tipo": "tip",
-        "titulo": "Actividad oral en clase: Describe la escena",
-        "texto": "1) Dibuja en el recuadro una escena de la playa de Rosarito con varias personas haciendo cosas. 2) Sin enseñar tu dibujo, descríbelo: «A man is fishing. Two kids are playing. It's sunny.» 3) Tu compañero dibuja lo que escucha. Al final comparen los dibujos.",
+        "titulo": "Actividad oral en clase: Describe la foto",
+        "texto": "1) Busca en tu teléfono una foto donde haya varias personas haciendo cosas (una fiesta, el malecón, el mercado, tu trabajo). 2) Sin enseñarla, descríbela a tu compañero: «A man is fishing. Two kids are playing. It's sunny.» 3) Tu compañero escribe en su cuaderno lo que escucha. 4) Enséñale la foto y revisen juntos qué tanto coincidió. Después cambien de papel.",
         "pagina": 73
       }
     ],
@@ -6894,4 +6894,90 @@ export function itemsDe(actividad) {
   if (actividad.tipo === 'relacionar') return actividad.pares;
   if (actividad.tipo === 'escritura') return [];
   return actividad.preguntas;
+}
+
+// =====================================================================
+//  PARA ESCUCHAR MÁS · enlaces de apoyo por unidad
+//  Son búsquedas en YouTube (siempre muestran videos actuales) para que el
+//  alumno escuche conversaciones reales parecidas a las de la unidad.
+// =====================================================================
+const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+const ESCUCHAR = {
+  u1: [
+    ['Conversaciones para saludar y presentarse', 'Diálogos lentos entre adultos que se conocen por primera vez.', 'basic english conversation greetings introductions slow'],
+    ['Hello, how are you? y sus respuestas', 'Formas comunes de saludar y contestar.', 'english greetings how are you answers beginners'],
+    ['El verbo to be en conversaciones', 'Ejemplos cortos con I am, you are, he is.', 'verb to be english conversation beginners']
+  ],
+  u2: [
+    ['Números en inglés en situaciones reales', 'Precios, teléfonos y edades dichos en voz alta.', 'english numbers listening practice phone numbers prices'],
+    ['Deletrear el nombre: How do you spell it?', 'Conversaciones donde piden deletrear nombres y correos.', 'english alphabet spelling names conversation'],
+    ['Dar datos personales', 'Diálogos para llenar una ficha o registrarse.', 'english conversation giving personal information form']
+  ],
+  u3: [
+    ['Hablar de la familia', 'Adultos que presentan a su familia y la describen.', 'english conversation talking about family beginners'],
+    ['Describir a una persona', 'Cómo es alguien: alto, amable, cabello largo.', 'describing people english conversation beginners'],
+    ['Have y has en conversaciones', 'I have two children, she has a brother.', 'have has english conversation practice']
+  ],
+  u4: [
+    ['Mi rutina diaria', 'Personas que cuentan qué hacen en un día normal.', 'daily routine english conversation adults'],
+    ['Decir la hora: What time is it?', 'Diálogos cortos para preguntar y decir la hora.', 'telling the time english conversation'],
+    ['Do you…? en la rutina', 'Preguntas y respuestas en presente simple.', 'present simple questions daily routine english listening']
+  ],
+  u5: [
+    ['Pedir comida en un restaurante', 'Mesero y cliente: I\'d like…, Can I have the check?', 'ordering food in a restaurant english conversation'],
+    ['En la cafetería', 'Pedir café, té o un sándwich para llevar.', 'ordering at a coffee shop english conversation'],
+    ['Hablar de la comida', 'Qué te gusta comer, desayuno, comida y cena.', 'talking about food english conversation beginners']
+  ],
+  u6: [
+    ['Pedir y dar direcciones', 'Excuse me, where is the bank? Turn left, go straight.', 'asking for directions english conversation'],
+    ['Lugares de la ciudad', 'Banco, farmacia, hospital, parada del camión.', 'places in town english vocabulary listening'],
+    ['There is y there are', 'Describir lo que hay en una calle o colonia.', 'there is there are english conversation']
+  ],
+  u7: [
+    ['Hablar del trabajo', 'What do you do? Personas que cuentan a qué se dedican.', 'talking about jobs english conversation beginners'],
+    ['Inglés para trabajar con clientes', 'Atender en una tienda, hotel o restaurante.', 'english for customer service basic conversation'],
+    ['Entrevista de trabajo sencilla', 'Preguntas básicas que hace un jefe.', 'simple job interview english beginners']
+  ],
+  u8: [
+    ['De compras en una tienda de ropa', 'Preguntar tallas, precios y probarse ropa.', 'shopping for clothes english conversation'],
+    ['How much is it? Precios y pagos', 'Cash or card? Conversaciones al pagar.', 'how much is it english conversation shopping'],
+    ['Colores y ropa', 'Describir lo que alguien trae puesto.', 'clothes and colors english listening beginners']
+  ],
+  u9: [
+    ['Can y can\'t: lo que sé hacer', 'Personas que hablan de lo que saben hacer.', 'can and cant abilities english conversation'],
+    ['Hablar del tiempo libre', 'What do you do in your free time?', 'free time hobbies english conversation adults'],
+    ['I like… / I love…', 'Gustos y actividades favoritas.', 'likes and dislikes english conversation beginners']
+  ],
+  u10: [
+    ['¿Qué está pasando? Presente continuo', 'What are you doing? I\'m working.', 'present continuous english conversation beginners'],
+    ['El clima: How\'s the weather?', 'Conversaciones y pronósticos del clima.', 'talking about the weather english conversation'],
+    ['Describir una foto en inglés', 'Personas que describen lo que pasa en una imagen.', 'describe a picture in english present continuous']
+  ],
+  u11: [
+    ['¿Qué hiciste el fin de semana?', 'What did you do last weekend?', 'what did you do last weekend english conversation'],
+    ['El pasado simple en conversaciones', 'Verbos regulares e irregulares en uso.', 'past simple english conversation beginners'],
+    ['Was y were', 'It was fun, we were tired.', 'was were english conversation practice']
+  ],
+  u12: [
+    ['Planes: going to', 'What are you going to do this summer?', 'going to future plans english conversation'],
+    ['Hablar de metas y sueños', 'Personas que cuentan sus planes para el futuro.', 'talking about future plans dreams english conversation'],
+    ['Repaso: conversaciones de todo el curso', 'Diálogos sencillos para repasar todo lo aprendido.', 'basic english conversations for beginners adults']
+  ]
+};
+const ESCUCHAR_GENERAL = [
+  ['BBC Learning English', 'Cursos gratuitos con audio y video para principiantes.', 'https://www.bbc.co.uk/learningenglish/'],
+  ['British Council · LearnEnglish', 'Ejercicios para escuchar por niveles (elige el nivel A1).', 'https://learnenglish.britishcouncil.org/']
+];
+for (const u of UNIDADES) {
+  const lista = ESCUCHAR[u.id];
+  if (!lista) continue;
+  u.material.push({
+    tipo: 'escuchar',
+    titulo: 'Para escuchar más',
+    texto: 'Escucha conversaciones parecidas a las de esta unidad. Primero solo escucha; luego ponle subtítulos en inglés, repite en voz alta y, si puedes, bájale la velocidad (⚙️ → Velocidad → 0.75).',
+    enlaces: [
+      ...lista.map(([titulo, desc, q]) => ({ titulo, desc, url: yt(q), yt: true })),
+      ...ESCUCHAR_GENERAL.map(([titulo, desc, url]) => ({ titulo, desc, url }))
+    ]
+  });
 }
