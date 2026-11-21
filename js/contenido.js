@@ -5,7 +5,9 @@
 //  Las unidades 2 a 12 se generan a partir de los mismos datos del cuadernillo.
 // =====================================================================
 
-export const CUADERNILLO = 'cuadernillo/cuadernillo-alumno.pdf';
+import { PAGINAS_CUADERNILLO } from './paginas-cuadernillo.js';
+
+export const CUADERNILLO = 'cuadernillo/cuadernillo-alumno.pdf?v=2026-11-21';
 
 export const TRIMESTRES = [
   {
@@ -6980,4 +6982,17 @@ for (const u of UNIDADES) {
       ...ESCUCHAR_GENERAL.map(([titulo, desc, url]) => ({ titulo, desc, url }))
     ]
   });
+}
+
+// =====================================================================
+//  PÁGINAS DEL CUADERNILLO
+//  Las escribe herramientas/cuadernillo/generar.py cada vez que se genera el PDF,
+//  para que cada unidad, bloque y actividad remita a su página real.
+// =====================================================================
+for (const u of UNIDADES) {
+  const m = PAGINAS_CUADERNILLO[u.id];
+  if (!m) continue;
+  u.paginas = m.paginas;
+  u.material.forEach((b, i) => { if (m.material[i]) b.pagina = m.material[i]; else delete b.pagina; });
+  u.actividades.forEach(a => { if (m.actividades[a.id]) a.cuadernillo = m.actividades[a.id]; else if (!a.extra) delete a.cuadernillo; });
 }
