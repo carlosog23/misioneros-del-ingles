@@ -86,7 +86,7 @@ function nombreActividad(unidadId, actId) {
 // ---------------------------------------------------------------------
 function marco(html, activo) {
   const nav = yo.rol === 'maestro'
-    ? [['#/maestro', 'Pendientes', 'pendientes'], ['#/maestro/alumnos', 'Alumnos', 'alumnos'], ['#/maestro/unidades', 'Unidades', 'unidades'], ['#/maestro/alta', 'Altas', 'alta']]
+    ? [['#/maestro', 'Pendientes', 'pendientes'], ['#/maestro/alumnos', 'Alumnos', 'alumnos'], ['#/maestro/unidades', 'Unidades', 'unidades'], ['#/maestro/cuadernillos', 'Cuadernillos', 'cuadernillos'], ['#/maestro/alta', 'Altas', 'alta']]
     : [['#/inicio', 'Mis unidades', 'inicio'], ['#/avance', 'Mi avance', 'avance']];
   return `${bannerDemo()}
   <header class="barra">
@@ -214,6 +214,61 @@ async function enviarQR(form) {
 }
 
 // ---------------------------------------------------------------------
+//  MAESTRO · Cuadernillos (ver, descargar, compartir y enviar por correo)
+// ---------------------------------------------------------------------
+// El del maestro NO se publica en el sitio (trae exámenes y respuestas): se guarda en Google Drive con acceso solo para maestros.
+const MAESTRO_DRIVE = '';
+const NOMBRE_ALUMNO = 'Cuadernillo del alumno - Misioneros del Ingles.pdf';
+const urlAlumno = () => new URL(CUADERNILLO.split('?')[0], location.href).href;
+
+async function blobAlumno() {
+  const r = await fetch(CUADERNILLO); if (!r.ok) throw new Error('No se pudo descargar el cuadernillo.');
+  return new Blob([await r.arrayBuffer()], { type: 'application/pdf' });
+}
+function descargar(blob, nombre) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+async function compartir(blob, nombre, texto) {
+  const f = new File([blob], nombre, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [f] })) {
+    try { await navigator.share({ files: [f], title: nombre.replace(/\.pdf$/, ''), text: texto }); return true; }
+    catch (e) { if (e && e.name === 'AbortError') return true; }
+  }
+  descargar(blob, nombre);
+  aviso('Se descargó el archivo. Adjúntalo en tu correo o en WhatsApp.');
+  return false;
+}
+const puedeCompartirArchivos = () => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] })); } catch (e) { return false; } };
+
+async function vistaCuadernillos() {
+  pintar(cargando(), 'cuadernillos');
+  const correo = `mailto:?subject=${encodeURIComponent('Cuadernillo de trabajo · Misioneros del Inglés')}&body=${encodeURIComponent(
+    `Hola:\n\nTe comparto el Cuadernillo del alumno del curso de inglés de la Misión Cultural No. 164. Puedes verlo, descargarlo o imprimirlo desde aquí:\n${urlAlumno()}\n\nCada actividad de la plataforma te dice en qué página del cuadernillo está.\n\n${yo.nombre}\nMisioneros del Inglés`)}`;
+  const compartirTxt = puedeCompartirArchivos() ? 'Compartir el PDF' : 'Descargar para adjuntar';
+  pintar(`<h1>Cuadernillos</h1>
+  <p class="sub-detalle">Ábrelo, descárgalo o envíalo a tus alumnos.</p>
+  <section class="tarjeta">
+    <h2>📘 Cuadernillo del alumno</h2>
+    <p>Todo el curso para trabajar en papel: vocabulario, gramática, diálogos y actividades. Los alumnos también lo tienen en su pantalla de inicio.</p>
+    <div class="botones-fila">
+      <a class="btn" href="${CUADERNILLO}" target="_blank" rel="noopener">Ver</a>
+      <button type="button" class="btn-sec" data-accion="cuad-descargar" data-cual="alumno">Descargar</button>
+      <a class="btn-sec" href="${correo}">Enviar por correo</a>
+      <button type="button" class="btn-sec" data-accion="cuad-compartir" data-cual="alumno">${compartirTxt}</button>
+      <button type="button" class="btn-sec" data-accion="cuad-copiar">Copiar enlace</button>
+    </div>
+    <p class="ayuda"><b>Enviar por correo</b> abre tu correo con el enlace del cuadernillo ya escrito; solo agrega los correos de tus alumnos. ${puedeCompartirArchivos() ? '<b>Compartir el PDF</b> lo manda como archivo adjunto por Gmail, WhatsApp u otra app.' : 'Si prefieres mandarlo como archivo adjunto, descárgalo y adjúntalo en tu correo.'}</p>
+  </section>
+  ${MAESTRO_DRIVE ? `<section class="tarjeta">
+    <h2>📕 Cuadernillo del maestro</h2>
+    <p>Dosificación de cada unidad, clave de respuestas, exámenes trimestrales para fotocopiar con su clave, guía del examen oral, rúbricas y registro de calificaciones.</p>
+    <div class="nota nota-alerta"><b>Solo para maestros.</b> Trae los exámenes y sus respuestas: no lo envíes a los alumnos. Está en Google Drive y solo lo abren las cuentas que tienen permiso.</div>
+    <div class="botones-fila"><a class="btn" href="${MAESTRO_DRIVE}" target="_blank" rel="noopener">Abrir en Google Drive</a></div>
+  </section>` : ''}`, 'cuadernillos');
+}
+
+// ---------------------------------------------------------------------
 //  Rutas
 // ---------------------------------------------------------------------
 async function rutear() {
@@ -228,6 +283,7 @@ async function rutear() {
       if (r1 === 'alumnos') return await vistaAlumnos();
       if (r1 === 'alumno') return await vistaDetalleAlumno(r2);
       if (r1 === 'unidades') return vistaUnidades();
+      if (r1 === 'cuadernillos') return await vistaCuadernillos();
       if (r1 === 'alta') return vistaAlta();
       location.hash = '#/maestro';
     } else {
@@ -693,6 +749,20 @@ document.addEventListener('click', async ev => {
   if (acc === 'salir' && VISITA) { if (confirm('¿Terminar el recorrido y borrar tus respuestas de prueba?')) D.reiniciar(); return; }
   if (acc === 'salir') { history.replaceState(null, '', location.pathname + location.search); if (!COMPARTIDA) QR.borrarAcceso(); cerrarCapa(); return D.salir(); }
   if (acc === 'leer-qr') return vistaLector();
+  if (acc === 'cuad-copiar') {
+    try { await navigator.clipboard.writeText(urlAlumno()); aviso('Enlace copiado. Pégalo en tu correo o en WhatsApp.'); } catch (e) { prompt('Copia este enlace:', urlAlumno()); }
+    return;
+  }
+  if (acc === 'cuad-descargar' || acc === 'cuad-compartir') {
+    const txt = el.textContent; el.disabled = true; el.textContent = 'Descargando…';
+    try {
+      const blob = await blobAlumno();
+      if (acc === 'cuad-descargar') descargar(blob, NOMBRE_ALUMNO);
+      else await compartir(blob, NOMBRE_ALUMNO, 'Cuadernillo de trabajo del curso de inglés de la Misión Cultural No. 164.');
+    } catch (e) { console.error(e); aviso(e.message || 'No se pudo descargar el cuadernillo.', 'error'); }
+    el.disabled = false; el.textContent = txt;
+    return;
+  }
   if (acc === 'cerrar-capa') return cerrarCapa();
   if (acc === 'cancelar-qr') { QR.olvidarQR(); return cerrarCapa(); }
   if (acc === 'nuevo-qr') { if (el.classList.contains('dormido')) arrancarQR(); return; }

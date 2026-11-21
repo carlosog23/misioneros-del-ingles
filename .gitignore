@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+herramientas/cuadernillo/maestro_datos.py
+*.pdf.descifrado
