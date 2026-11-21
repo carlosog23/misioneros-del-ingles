@@ -217,7 +217,7 @@ async function enviarQR(form) {
 //  MAESTRO · Cuadernillos (ver, descargar, compartir y enviar por correo)
 // ---------------------------------------------------------------------
 // El del maestro NO se publica en el sitio (trae exámenes y respuestas): se guarda en Google Drive con acceso solo para maestros.
-const MAESTRO_DRIVE = '';
+const MAESTRO_DRIVE = 'https://drive.google.com/file/d/1ODMg38w76jq-83XLCpVzJWrGaDSpJ411/view';
 const NOMBRE_ALUMNO = 'Cuadernillo del alumno - Misioneros del Ingles.pdf';
 const urlAlumno = () => new URL(CUADERNILLO.split('?')[0], location.href).href;
 
