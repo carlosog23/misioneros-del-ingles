@@ -6,6 +6,12 @@
 import { iniciar, MODO, VISITA, normalizarUsuario } from './datos.js';
 import { UNIDADES, buscarUnidad, itemsDe, CUADERNILLO, TRIMESTRES, ILUSTRACIONES } from './contenido.js';
 import { pronunciacion, pronunciacionFrase } from './pronunciacion.js';
+import * as QR from './acceso-qr.js';
+
+const QR_ACTIVO = MODO === 'firebase';               // el QR usa las cuentas reales
+const COMPARTIDA = QR.COMPARTIDA && !VISITA;         // iMac de la escuela: ?equipo=compartido
+const INACTIVO_MIN = 15;                             // en la computadora compartida se cierra sola
+let quitarVigilancia = null;
 
 const $app = document.getElementById('app');
 let D = null;          // capa de datos
@@ -88,9 +94,10 @@ function marco(html, activo) {
       <img src="img/emblema-192.png" alt="" width="44" height="44">
       <span><strong>Misioneros del Inglés</strong><small>Misión Cultural No. 164</small></span>
     </a>
-    <div class="usuario"><span class="usuario-nombre">${esc(yo.nombre)}</span><button type="button" class="btn-sec btn-chico" data-accion="salir">Salir</button></div>
+    <div class="usuario"><span class="usuario-nombre">${esc(yo.nombre)}</span>${QR_ACTIVO && !COMPARTIDA && !VISITA ? `<button type="button" class="btn-sec btn-chico btn-qr" data-accion="leer-qr" title="Entrar en una computadora con código QR">${ICONO_QR}<span>Computadora</span></button>` : ''}<button type="button" class="${COMPARTIDA ? 'btn' : 'btn-sec'} btn-chico" data-accion="salir">${COMPARTIDA ? 'Cerrar sesión' : 'Salir'}</button></div>
   </header>
   <nav class="pestanas" aria-label="Secciones">${nav.map(([h, t, k]) => `<a href="${h}" ${k === activo ? 'class="activa" aria-current="page"' : ''}>${t}</a>`).join('')}</nav>
+  ${COMPARTIDA ? `<div class="aviso-compartida" id="aviso-compartida">Computadora de uso común: al terminar toca <b>Cerrar sesión</b>. Se cierra sola tras ${INACTIVO_MIN} minutos sin uso.</div>` : ''}
   <main class="contenido" id="principal">${html}</main>
   <footer class="pie">Misiones Culturales · Inglés para superarte<br>Misión Cultural No. 164 · Playas de Rosarito, B.C.</footer>`;
 }
@@ -100,23 +107,110 @@ function pintar(html, activo) { $app.innerHTML = marco(html, activo); }
 // ---------------------------------------------------------------------
 //  Inicio de sesión
 // ---------------------------------------------------------------------
+const ICONO_QR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+
+function formLogin(msg) {
+  return `<form data-form="login" class="formulario">
+        <label>Usuario<input name="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="${COMPARTIDA ? 'off' : 'current-password'}" required></label>
+        ${msg ? `<p class="error" role="alert">${esc(msg)}</p>` : ''}
+        <button class="btn btn-ancho" type="submit">Entrar</button>
+      </form>`;
+}
+
+// Computadora compartida: QR grande para entrar con el celular y, al lado, usuario y contraseña.
+function loginCompartida(msg) {
+  $app.innerHTML = `
+  <main class="login login-compartida">
+    <div class="login-doble">
+      <section class="lado-qr" aria-label="Entrar con el celular">
+        <div class="marca-login"><img src="img/emblema-192.png" alt="" width="56" height="56"><div><h1>Misioneros del Inglés</h1><p class="sub">Misión Cultural No. 164</p></div></div>
+        <h2>Entra con tu celular</h2>
+        <button type="button" class="qr-caja dormido" id="qr-caja" data-accion="nuevo-qr" aria-label="Código QR para entrar"></button>
+        <p class="qr-estado" id="qr-estado" aria-live="polite"></p>
+        <ol class="qr-pasos">
+          <li>En tu celular abre <b>Misioneros del Inglés</b> (con tu sesión iniciada).</li>
+          <li>Toca <b>${ICONO_QR} Computadora</b> y apunta al código. También sirve la cámara normal del celular.</li>
+        </ol>
+      </section>
+      <section class="lado-manual" aria-label="Entrar con usuario y contraseña">
+        <h2>O escribe tu usuario</h2>
+        ${formLogin(msg)}
+        <p class="ayuda">Computadora de uso común: la sesión se cierra al terminar y no se guarda tu contraseña.</p>
+      </section>
+    </div>
+  </main>`;
+  arrancarQR();
+}
+function arrancarQR() {
+  const caja = document.getElementById('qr-caja'), est = document.getElementById('qr-estado');
+  if (!caja) return;
+  QR.mostrarQR(caja, (u, p) => D.entrar(u, p), (t, tipo) => { est.textContent = t; est.className = 'qr-estado ' + (tipo || ''); });
+}
+
 function mostrarLogin(msg) {
+  if (COMPARTIDA && QR_ACTIVO) return loginCompartida(msg);
+  const pend = QR_ACTIVO && QR.qrPendiente();
   $app.innerHTML = `${bannerDemo()}
   <main class="login">
     <div class="login-caja">
       <img src="img/emblema-512.png" alt="Emblema de Misioneros del Inglés: sol sobre el mar y un libro abierto" width="132" height="132">
       <h1>Misioneros del Inglés</h1>
       <p class="sub">Misiones Culturales · Inglés para superarte</p>
-      <form data-form="login" class="formulario">
-        <label>Usuario<input name="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-        <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-        ${msg ? `<p class="error" role="alert">${esc(msg)}</p>` : ''}
-        <button class="btn btn-ancho" type="submit">Entrar</button>
-      </form>
+      ${pend ? '<p class="nota">Inicia sesión aquí en tu celular y enseguida entrarás también en la computadora.</p>' : ''}
+      ${formLogin(msg)}
       ${MODO === 'demo' ? `<div class="nota">Para probar: <b>teacher</b> / <b>demo123</b> (maestro) o <b>maria</b> / <b>demo123</b> (alumna).</div>` : `<p class="ayuda">¿Olvidaste tu contraseña? Pídesela a tu maestro.</p>`}
       <p class="pie-login">Misión Cultural No. 164 · Playas de Rosarito, B.C.</p>
     </div>
   </main>`;
+}
+
+// ---------------------------------------------------------------------
+//  Celular · entrar en una computadora con QR
+// ---------------------------------------------------------------------
+function capa(html) {
+  let c = document.getElementById('capa-qr');
+  if (!c) { c = document.createElement('div'); c.id = 'capa-qr'; c.className = 'capa-qr'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-modal', 'true'); document.body.appendChild(c); }
+  c.innerHTML = `<div class="capa-caja">${html}</div>`; c.hidden = false;
+  return c;
+}
+function cerrarCapa() { QR.cerrarLector(); const c = document.getElementById('capa-qr'); if (c) c.hidden = true; }
+
+function vistaLector() {
+  const c = capa(`<h2>Entrar en una computadora</h2>
+    <p class="sub-detalle">Apunta al código QR que aparece en la pantalla de la computadora.</p>
+    <div class="lector"><video id="lector-video" muted playsinline></video><span class="lector-marco"></span></div>
+    <p class="error" id="lector-error" role="alert" hidden></p>
+    <button type="button" class="btn-sec btn-ancho" data-accion="cerrar-capa">Cancelar</button>`);
+  QR.abrirLector(c.querySelector('#lector-video'), p => confirmarQR(p), t => { const e = c.querySelector('#lector-error'); e.textContent = t; e.hidden = false; });
+}
+
+async function confirmarQR(p, error) {
+  const falta = !(await QR.tieneAcceso());
+  capa(`<h2>¿Entrar en la computadora?</h2>
+    <p>La computadora abrirá Misioneros del Inglés con tu cuenta: <b>${esc(yo.nombre)}</b>.</p>
+    <form data-form="enviar-qr" class="formulario">
+      ${falta ? `<label>Escribe tu contraseña (solo esta vez)<input name="password" type="password" autocomplete="current-password" required></label><small class="bloque-sm">Se guarda protegida en este celular para las próximas veces.</small>` : ''}
+      ${error ? `<p class="error" role="alert">${esc(error)}</p>` : ''}
+      <button class="btn btn-ancho" type="submit">Sí, entrar</button>
+      <button type="button" class="btn-sec btn-ancho" data-accion="cancelar-qr">No</button>
+    </form>`);
+  capa._p = p;
+}
+
+async function enviarQR(form) {
+  const p = capa._p || QR.qrPendiente(); if (!p) { cerrarCapa(); return; }
+  const btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const r = await QR.enviarAcceso(p, yo, new FormData(form).get('password') || '');
+    if (r.faltaPassword) return confirmarQR(p);
+    capa(`<div class="listo-qr">✓</div><h2>¡Listo!</h2><p>Mira la computadora: en unos segundos se abrirá con tu cuenta.</p>
+      <p class="ayuda">Al terminar, toca <b>Cerrar sesión</b> en la computadora.</p>
+      <button type="button" class="btn btn-ancho" data-accion="cerrar-capa">Seguir aquí</button>`);
+  } catch (e) {
+    console.error(e);
+    confirmarQR(p, /venci/i.test(e.message) ? 'Ese código ya venció. En la computadora toca el código para que salga uno nuevo y vuelve a escanear.' : e.message);
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -597,7 +691,11 @@ document.addEventListener('click', async ev => {
   const acc = el.dataset.accion;
   if (acc === 'hablar') return hablar(el.dataset.texto);
   if (acc === 'salir' && VISITA) { if (confirm('¿Terminar el recorrido y borrar tus respuestas de prueba?')) D.reiniciar(); return; }
-  if (acc === 'salir') { history.replaceState(null, '', location.pathname + location.search); return D.salir(); }
+  if (acc === 'salir') { history.replaceState(null, '', location.pathname + location.search); if (!COMPARTIDA) QR.borrarAcceso(); cerrarCapa(); return D.salir(); }
+  if (acc === 'leer-qr') return vistaLector();
+  if (acc === 'cerrar-capa') return cerrarCapa();
+  if (acc === 'cancelar-qr') { QR.olvidarQR(); return cerrarCapa(); }
+  if (acc === 'nuevo-qr') { if (el.classList.contains('dormido')) arrancarQR(); return; }
   if (acc === 'recargar') return location.reload();
   if (acc === 'reiniciar-demo') { if (confirm(VISITA ? '¿Borrar tus respuestas de prueba y empezar de nuevo?' : '¿Borrar los datos de prueba y empezar de nuevo?')) D.reiniciar(); return; }
   if (acc === 'ficha') {
@@ -638,10 +736,13 @@ document.addEventListener('submit', async ev => {
   if (tipo === 'login') {
     const fd = new FormData(form);
     const btn = form.querySelector('button'); btn.disabled = true; btn.textContent = 'Entrando…';
+    // En el celular se guarda el acceso (protegido) antes de entrar, para poder pasarlo después a una computadora con QR.
+    if (QR_ACTIVO && !COMPARTIDA) await QR.guardarAcceso(normalizarUsuario(fd.get('usuario')), fd.get('password'));
     try { await D.entrar(fd.get('usuario'), fd.get('password')); }
-    catch (e) { mostrarLogin('Usuario o contraseña incorrectos.'); }
+    catch (e) { if (!COMPARTIDA) QR.borrarAcceso(); mostrarLogin('Usuario o contraseña incorrectos.'); }
     return;
   }
+  if (tipo === 'enviar-qr') return enviarQR(form);
   if (tipo === 'actividad') return enviarActividad(form);
   if (tipo === 'alta') return crearAlta(form);
   if (tipo === 'revisar') {
@@ -666,6 +767,7 @@ document.addEventListener('submit', async ev => {
 //  Arranque
 // ---------------------------------------------------------------------
 async function arrancar() {
+  QR.tomarQRdelEnlace();
   $app.innerHTML = cargando();
   try { D = await iniciar(); }
   catch (e) {
@@ -675,6 +777,16 @@ async function arrancar() {
   }
   D.onSesion(async (perfil, msg) => {
     yo = perfil;
+    if (COMPARTIDA) {
+      if (quitarVigilancia) { quitarVigilancia(); quitarVigilancia = null; }
+      if (yo) {
+        QR.detenerQR();
+        quitarVigilancia = QR.vigilarInactividad(INACTIVO_MIN, min => {
+          const a = document.getElementById('aviso-compartida');
+          if (a) { a.classList.toggle('urgente', !!min); if (min) a.innerHTML = `Sin uso: la sesión se cerrará en <b>${min} min</b>. Toca la pantalla para seguir.`; }
+        }, () => D.salir());
+      }
+    }
     if (!yo && VISITA) { try { await D.entrar('visitante', 'visita164'); } catch (e) { console.error(e); mostrarLogin(msg); } return; }
     if (!yo) { mostrarLogin(msg); return; }
     try { config = await D.config(); } catch (e) { console.error(e); }
@@ -682,8 +794,12 @@ async function arrancar() {
     const inicio = yo.rol === 'maestro' ? '#/maestro' : '#/inicio';
     if (!location.hash || location.hash === '#/' || location.hash === '#') location.hash = inicio; // dispara hashchange
     else rutear();
+    if (QR_ACTIVO && !COMPARTIDA && QR.qrPendiente()) confirmarQR(QR.qrPendiente());
   });
-  window.addEventListener('hashchange', () => { rutear(); window.scrollTo(0, 0); });
+  window.addEventListener('hashchange', () => {
+    if (/^#qr=/.test(location.hash)) { QR.tomarQRdelEnlace(); if (yo && !COMPARTIDA && QR.qrPendiente()) confirmarQR(QR.qrPendiente()); else if (!yo) mostrarLogin(); return; }
+    rutear(); window.scrollTo(0, 0);
+  });
   if ('speechSynthesis' in window) speechSynthesis.getVoices();
 }
 

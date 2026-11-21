@@ -6,6 +6,7 @@
 // =====================================================================
 
 import { FIREBASE_CONFIG, DOMINIO_USUARIOS } from './firebase-config.js';
+import { COMPARTIDA } from './acceso-qr.js';
 
 // Recorrido de prueba (demo.html): siempre en modo demostración, sin tocar los datos reales
 export const VISITA = typeof window !== 'undefined' && window.MISIONEROS_VISITA === true;
@@ -37,7 +38,8 @@ async function crearFirebase() {
     import(B + 'firebase-firestore.js')
   ]);
   const app = appM.initializeApp(FIREBASE_CONFIG);
-  const auth = authM.getAuth(app);
+  // En una computadora compartida la sesión dura solo mientras la ventana esté abierta.
+  const auth = COMPARTIDA ? authM.initializeAuth(app, { persistence: authM.browserSessionPersistence }) : authM.getAuth(app);
   const db = fs.getFirestore(app);
   const correo = u => `${normalizarUsuario(u)}@${DOMINIO_USUARIOS}`;
   const lista = snap => snap.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
